@@ -26,7 +26,7 @@ from dvbobjects.DVB.DataCarousel import *
 from dvbobjects.DVB.Loops import *
 
 ######################################################################
-def BuildCarousel(INPUT_DIR, OUTPUT_DIR):
+def BuildCarousel(INPUT_DIR, OUTPUT_DIR, TYPE):
 
     spec = SuperGroupSpec()
     spec.read("%s/DSI.spec" % INPUT_DIR)
@@ -56,12 +56,20 @@ def BuildCarousel(INPUT_DIR, OUTPUT_DIR):
         for mod in group.modules:
             if os.path.exists("%s.size" % mod.INPUT):
 	        # print("Compressing %s") % mod.INPUT
-                m = Module(INPUT="%s" % mod.INPUT,
+                if (TYPE == 0):
+                    m = Module(INPUT="%s" % mod.INPUT,
                            moduleVersion= mod.moduleVersion,
                            moduleId = mod.moduleId,
                            assocTag = group.assocTag,
-			   descriptors = [compressed_descriptor(name = mod.INPUT)],
-                )
+			               descriptors = [compressed_descriptor(name = mod.INPUT)],
+                    )
+                else:
+                     m = Module(INPUT="%s" % mod.INPUT,
+                           moduleVersion= mod.moduleVersion,
+                           moduleId = mod.moduleId,
+                           assocTag = group.assocTag,
+			               descriptors = [compression_type_descriptor(name = mod.INPUT)],
+                    )
             else:
                 m = Module(INPUT="%s" % mod.INPUT,
                            moduleVersion= mod.moduleVersion,
@@ -86,7 +94,8 @@ def Usage(return_code = 1):
     print ("Usage: %s"
            " [option...]"
            " <InputModuleDirectory>"
-           " <OutputSectionsDirectory>") % (
+           " <OutputSectionsDirectory>"
+           " <type>" ) % (
         sys.argv[0])
     sys.exit(return_code)
 
@@ -102,12 +111,12 @@ def CheckArgs():
         if opt_name in ['-h', '--help']:
             Usage(0)
 
-    if len(args) <> 2:
+    if len(args) <> 3:
         Usage()
 
-    INPUT_DIR, OUTPUT_DIR = args
+    INPUT_DIR, OUTPUT_DIR, TYPE = args
     
-    BuildCarousel(INPUT_DIR, OUTPUT_DIR)
+    BuildCarousel(INPUT_DIR, OUTPUT_DIR, TYPE)
 
 ######################################################################
 if __name__ == '__main__':

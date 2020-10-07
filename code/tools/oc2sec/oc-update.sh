@@ -3,13 +3,14 @@
 if [ $# -lt 5 ]
 then
 	/bin/echo "Usage:"
-	/bin/echo "oc-update.sh object_carousel_directory association_tag module_version dsmcc_pid carousel_id [compress_mode] [padding_on] [clean_off] [DDB_size] [update_flag] [mount_frequency]"
+	/bin/echo "oc-update.sh object_carousel_directory association_tag module_version dsmcc_pid carousel_id [compress_mode] [type] [padding_on] [clean_off] [DDB_size] [update_flag] [mount_frequency]"
 	/bin/echo "	- carousel_directory: the directory to marshal in an object carousel"
 	/bin/echo "	- association_tag aka common tag, referenced by PMTs and AITs, every carousel has one"
 	/bin/echo "	- modules_version, all the modules will have the same version, you need to change this to notify to the box files are changed, goes from 0 to 15"
 	/bin/echo "	- pid, referenced by PMTs using this carousel"
 	/bin/echo "	- carousel_id, referenced by PMTs using this carousel, every carousel has its own, it is an alternative for association_tag, they have the same function"
 	/bin/echo "	- compress_mode, 0: don't compress, 1:compress all, 2:smart compress, file with .solo extension are set in an uncompressed module alone to allow use cases like quick image file update, default is 2"
+    /bin/echo " - type, 0: DVB, 1: ISDTB, default is 0"
 	/bin/echo "	- padding_on, every section is padded, was useful with some buggy decoder, waste bandwidth, default off, unsupported since OpenCaster 2.4.8"
 	/bin/echo "	- clean_off, don't delete temp file, default off, used for debug"
 	/bin/echo "	- DDB_size, Use custom size for DDB payload, default = max = 4066"
@@ -36,6 +37,7 @@ fi
 OCDIR=$1
 ASSOCIATION_TAG=$2
 MODULE_VERSION=$3
+TYPE="0"
 PID=$4
 CAROUSEL_ID=$5
 COMPRESS_MODE="2"
@@ -50,23 +52,31 @@ COMPRESS_MODE=$6
 fi
 if [ $# -gt 6 ]
 then
-PAD_ON=$
+TYPE=$7
 fi
 if [ $# -gt 7 ]
 then
-NO_DELETE_TEMP=$8
+PAD_ON=$
 fi
 if [ $# -gt 8 ]
 then
-BLOCK_SIZE=$9
+NO_DELETE_TEMP=$9
 fi
 if [ $# -gt 9 ]
 then
-UPDATE_FLAG=${10}
+BLOCK_SIZE=$10
 fi
 if [ $# -gt 10 ]
 then
-MOUNT_PERIOD=${11}
+UPDATE_FLAG=${11}
+fi
+if [ $# -gt 11 ]
+then
+MOUNT_PERIOD=${12}
+fi
+if [ $# -gt 12 ]
+then
+MOUNT_PERIOD=${12}
 fi
 
 #Generate temp directories
@@ -104,7 +114,7 @@ then
 fi
 
 #Generate sections from modules, the sections are stored into a tmp directory TEMP_DIR_SEC
-/usr/local/bin/mod2sec.py $TEMP_DIR_MOD $TEMP_DIR_SEC
+/usr/local/bin/mod2sec.py $TEMP_DIR_MOD $TEMP_DIR_SEC $TYPE
 
 # Check if it is necessary to pad every sections or not, unluckly we have found some decoders having buggy section filtering that needed this
 if [ "$PAD_ON" = "1" ]

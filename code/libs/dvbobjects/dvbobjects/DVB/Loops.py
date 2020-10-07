@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# encoding: utf-8
 
 # This file is part of the dvbobjects library.
 # 
@@ -17,7 +18,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import string
 from dvbobjects.utils import *
@@ -168,6 +169,25 @@ class compressed_descriptor(Descriptor):
 	            compression_method,
                     original_size,
                     )
+##################################################################
+class compression_type_descriptor(Descriptor):
+
+    descriptor_tag = 0xc2
+
+    def bytes(self):
+
+        compression_type = 0x00
+
+	sizeFile = "%s.size" % self.name
+	items = string.split(open(sizeFile).readline())
+	original_size = eval(items[0])
+	# print("module size %d" % original_size)
+        fmt ="!BL" 
+        return pack(fmt,
+	            compression_type,
+                    original_size,
+                    )
+
 ###################################################################
 class crc32_descriptor(Descriptor):
     descriptor_tag = 0x05
@@ -175,11 +195,4 @@ class crc32_descriptor(Descriptor):
     def bytes(self):
         fmt = "!L"
         return pack(fmt, self.calc_crc32)
-###################################################################
-class ssu_module_type_descriptor(Descriptor):
-    descriptor_tag = 0x0A
-
-    def bytes(self):
-        fmt = "!B"
-        return pack(fmt, self.module_type)
 
